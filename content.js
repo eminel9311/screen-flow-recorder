@@ -24,40 +24,13 @@ async function createNewStep() {
 // Cải thiện hàm chụp screenshot
 async function captureScreenshot() {
   try {
-    const stream = await Promise.race([
-      navigator.mediaDevices.getDisplayMedia({
-        preferCurrentTab: true,
-        video: { displaySurface: "browser" }
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Screenshot timeout')), 10000)
-      )
-    ]);
+    const response = await chrome.runtime.sendMessage({ type: 'CAPTURE_SCREENSHOT' });
 
-    const video = document.createElement('video');
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    if (!response || !response.success) {
+      throw new Error(response?.error || 'Unknown error');
+    }
 
-    return new Promise((resolve, reject) => {
-      video.onloadedmetadata = () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        video.play()
-          .then(() => {
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            stream.getTracks().forEach(track => track.stop());
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
-          })
-          .catch(reject);
-      };
-      video.srcObject = stream;
-
-      // Thêm timeout cho video loading
-      setTimeout(() => {
-        stream.getTracks().forEach(track => track.stop());
-        reject(new Error('Video loading timeout'));
-      }, 5000);
-    });
+    return response.screenshot;
   } catch (err) {
     console.error('Screenshot capture failed:', err);
     return null;

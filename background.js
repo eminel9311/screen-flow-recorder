@@ -93,6 +93,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           await backgroundState.storage.setSteps([]);
           sendResponse({ success: true });
           break;
+        // Thêm case này vào switch statement trong background.js
+        case 'CAPTURE_SCREENSHOT':
+          try {
+            // Chụp màn hình của tab đang active
+            const tab = sender.tab || (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+            if (!tab || !tab.id) {
+              throw new Error('No active tab found');
+            }
+
+            const dataUrl = await chrome.tabs.captureVisibleTab(
+              tab.windowId,
+              { format: 'jpeg', quality: 80 }
+            );
+
+            if (chrome.runtime.lastError) {
+              throw new Error(chrome.runtime.lastError.message);
+            }
+
+            sendResponse({ success: true, screenshot: dataUrl });
+          } catch (error) {
+            console.error('Screenshot capture error:', error);
+            sendResponse({
+              success: false,
+              error: `Screenshot capture failed: ${error.message}`
+            });
+          }
+          break;
 
         default:
           throw new Error('Unknown message type');
