@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        width: 400px;
+        padding: 10px;
+      }
+      .steps-container {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .step {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        position: relative;
+      }
+      .step img {
+        max-width: 100%;
+      }
+      .step-actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+      }
+      .recording {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+
+      .error {
+        color: red;
+      }
+
+      .step-url, .step-events {
+        word-break: break-all;
+        margin: 5px 0;
+      }
+
+      .step-screenshot {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 10px;
+      }
+      .step-screenshot {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 10px;
+      }
+
+      .delete-btn {
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+      }
+
+      .no-steps {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <button id="startStop">Start Recording</button>
+      <button id="export" disabled>Export to Slideshow</button>
+      <button id="test">Test Features</button>
+      <span id="status"></span>
+    </div>
+    <div id="steps" class="steps-container"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

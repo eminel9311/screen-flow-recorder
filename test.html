@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extension Test Page</title>
+</head>
+<body>
+    <h1>Test Page for Screen Flow Recorder</h1>
+    <button id="btn1">Test Button 1</button>
+    <input type="text" id="input1" placeholder="Test Input">
+    <form id="form1">
+        <input type="text" placeholder="Form Input">
+        <button type="submit">Submit</button>
+    </form>
+    
+    <script>
+        // Add some test interactions
+        document.getElementById('btn1').addEventListener('click', () => {
+            console.log('Button clicked');
+        });
+        
+        document.getElementById('input1').addEventListener('input', (e) => {
+            console.log('Input changed:', e.target.value);
+        });
+        
+        document.getElementById('form1').addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('Form submitted');
+        });
+    </script>
+</body>
+</html>
