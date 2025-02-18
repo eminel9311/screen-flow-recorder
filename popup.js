@@ -113,19 +113,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       status.className = 'error';
     }
   });
-
-  // Thêm listener cho nút test
-  document.getElementById('test').addEventListener('click', async () => {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: 'TEST_FEATURES'
-      });
-      console.log('Test results:', response);
-    } catch (error) {
-      console.error('Test failed:', error);
-    }
-  });
 });
 
 function displaySteps() {
@@ -133,7 +120,7 @@ function displaySteps() {
   container.innerHTML = '';
 
   if (!recorderState.steps || recorderState.steps.length === 0) {
-    container.innerHTML = '<div class="no-steps">No steps recorded yet</div>';
+    container.innerHTML = '<div class="no-steps">No step recorded!</div>';
     return;
   }
 
@@ -144,36 +131,30 @@ function displaySteps() {
     const info = document.createElement('div');
     info.className = 'step-info';
     info.innerHTML = `
-      <strong>Step ${index + 1}</strong>
-      <p class="step-url">URL: ${step.url || 'N/A'}</p>
-      <p class="step-events">Events: ${step.events?.map(e => e.type).join(', ') || 'No events'}</p>
+      <div class="step-header">
+        <strong>Bước ${index + 1}</strong>
+        <button class="delete-btn" title="Xóa bước này">×</button>
+      </div>
+      <p class="step-url"><span>URL:</span> ${step.url || 'N/A'}</p>
+      <p class="step-events"><span>Sự kiện:</span> ${step.events?.map(e => e.type).join(', ') || 'Không có'}</p>
     `;
 
     if (step.screenshot) {
       const img = document.createElement('img');
       img.src = step.screenshot;
-      img.alt = `Screenshot of step ${index + 1}`;
+      img.alt = `Ảnh chụp bước ${index + 1}`;
       img.className = 'step-screenshot';
-      img.loading = 'lazy'; // Lazy loading for better performance
+      img.loading = 'lazy';
       stepElement.appendChild(img);
     }
 
-    const actions = document.createElement('div');
-    actions.className = 'step-actions';
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = '×';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.title = 'Delete step';
+    const deleteBtn = info.querySelector('.delete-btn');
     deleteBtn.onclick = () => {
       recorderState.steps.splice(index, 1);
       displaySteps();
       document.getElementById('export').disabled = recorderState.steps.length === 0;
     };
 
-    actions.appendChild(deleteBtn);
-    stepElement.appendChild(info);
-    stepElement.appendChild(actions);
     container.appendChild(stepElement);
   });
 }
@@ -183,18 +164,68 @@ function generateSlideshow(steps) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Tutorial Slideshow</title>
+      <title>Hướng dẫn từng bước</title>
       <style>
-        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-        .slide { display: none; max-width: 800px; margin: 0 auto; padding: 20px; }
+        body { 
+          font-family: 'Segoe UI', Roboto, sans-serif; 
+          margin: 20px; 
+          line-height: 1.6;
+          background: #f5f5f5;
+        }
+        .slide { 
+          display: none; 
+          max-width: 800px; 
+          margin: 0 auto; 
+          padding: 20px;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
         .slide.active { display: block; }
-        .navigation { text-align: center; margin: 20px; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px; }
-        .slide img { max-width: 100%; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navigation { 
+          text-align: center; 
+          margin: 20px; 
+          position: fixed; 
+          bottom: 0; 
+          left: 0; 
+          right: 0; 
+          background: rgba(255,255,255,0.95);
+          padding: 15px;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .slide img { 
+          max-width: 100%; 
+          border-radius: 6px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
         .events { margin-top: 20px; }
-        .event { padding: 8px; background: #f5f5f5; margin: 5px 0; border-radius: 4px; }
-        button { padding: 10px 20px; margin: 0 5px; cursor: pointer; border: none; background: #007bff; color: white; border-radius: 4px; }
+        .event { 
+          padding: 10px; 
+          background: #f8f9fa; 
+          margin: 8px 0; 
+          border-radius: 6px;
+          border-left: 4px solid #007bff;
+        }
+        button { 
+          padding: 12px 24px; 
+          margin: 0 8px; 
+          cursor: pointer; 
+          border: none; 
+          background: #007bff; 
+          color: white; 
+          border-radius: 6px;
+          font-weight: 500;
+          transition: background 0.2s;
+        }
         button:hover { background: #0056b3; }
-        .counter { display: inline-block; min-width: 80px; }
+        .counter { 
+          display: inline-block; 
+          min-width: 80px;
+          font-weight: 500;
+          color: #444;
+        }
+        h2 { color: #2c3e50; }
+        h3 { color: #34495e; }
       </style>
     </head>
     <body>
