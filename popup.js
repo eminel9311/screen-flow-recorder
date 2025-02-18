@@ -11,6 +11,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const status = document.getElementById('status');
   const exportBtn = document.getElementById('export');
 
+  // Kiểm tra trạng thái recording khi popup được mở
+  try {
+    const recordingState = await chrome.runtime.sendMessage({ type: 'GET_RECORDING_STATE' });
+    if (recordingState.success) {
+      recorderState.isRecording = recordingState.isRecording;
+      
+      // Cập nhật giao diện dựa trên trạng thái thực tế
+      if (recorderState.isRecording) {
+        button.textContent = 'Stop Recording';
+        status.textContent = 'Recording...';
+        status.className = 'recording';
+        exportBtn.disabled = true;
+      }
+    }
+  } catch (error) {
+    console.error('Error getting recording state:', error);
+  }
+
   // Lấy steps đã lưu từ background
   try {
     const response = await chrome.runtime.sendMessage({ type: 'GET_STEPS' });

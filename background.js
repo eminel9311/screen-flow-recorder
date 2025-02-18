@@ -2,21 +2,37 @@ console.log('Background script loaded');
 
 // Quản lý state trong background
 const backgroundState = {
-  // Lưu ID của tab đang recording
-  recordingTabId: null,
-
-  // Object chứa các phương thức thao tác với storage
   storage: {
-    // Lấy danh sách steps đã lưu
+    // Các method storage hiện tại giữ nguyên
     async getSteps() {
       const data = await chrome.storage.local.get('recordedSteps');
       return data.recordedSteps || [];
     },
 
-    // Lưu danh sách steps mới
     async setSteps(steps) {
       await chrome.storage.local.set({ recordedSteps: steps });
+    },
+
+    // Thêm methods để lưu và lấy recording state
+    async setRecordingState(tabId) {
+      console.log('Setting recording state:', tabId);
+      await chrome.storage.local.set({ 
+        recordingState: {
+          isRecording: tabId !== null,
+          recordingTabId: tabId
+        }
+      });
+    },
+
+    async getRecordingState() {
+      const data = await chrome.storage.local.get('recordingState');
+      return data.recordingState || { isRecording: false, recordingTabId: null };
     }
+  },
+
+  async setRecordingTabId(tabId) {
+    this.recordingTabId = tabId;
+    await this.storage.setRecordingState(tabId);
   }
 };
 
@@ -59,12 +75,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       switch (message.type) {
         case 'START_RECORDING':
-          backgroundState.recordingTabId = message.tabId;
+          await backgroundState.setRecordingTabId(message.tabId);
           sendResponse({ success: true });
           break;
 
         case 'STOP_RECORDING':
-          backgroundState.recordingTabId = null;
+          await backgroundState.setRecordingTabId(null);
           sendResponse({ success: true });
           break;
 
@@ -93,7 +109,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           await backgroundState.storage.setSteps([]);
           sendResponse({ success: true });
           break;
-        // Thêm case này vào switch statement trong background.js
         case 'CAPTURE_SCREENSHOT':
           try {
             // Chụp màn hình của tab đang active
@@ -120,7 +135,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
           }
           break;
-
+        case 'GET_RECORDING_STATE':
+          const state = await backgroundState.storage.getRecordingState();
+          sendResponse({ success: true, ...state });
+          break;
         default:
           throw new Error('Unknown message type');
       }
